@@ -14,20 +14,10 @@ exports.register = function(req, res) {
     if (user.errors.length) {
         res.send(user.errors)
     } else {
-        res.send("Congrats, there are no errors.");
+        res.send("Congrats, there are no errors.")
     }
 }
 
 exports.home = function(req, res) {
     res.render('home-guest');
 } 
-
-
-// module.exports = {
-//     login: function() {
-
-//     },
-//     logout: function() {
-
-//     }
-// }

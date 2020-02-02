@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require('express');
 const app = express();
 
 
@@ -13,4 +13,4 @@ app.set('view engine', 'ejs'); //choose template engine: pug, handlebars, ejs, e
 
 app.use('/', router);
 
-app.listen(3001);
+module.exports = app;
