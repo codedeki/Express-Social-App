@@ -15,6 +15,11 @@ let sessionOptions = session({
 app.use(sessionOptions);
 app.use(flash());
 
+//give ejs templates access to user property to avoid duplication of {username: req.session.user.username, avatar: req.session.user.avatar}
+app.use(function(req, res, next) {
+    res.locals.user = req.session.user; 
+    next();
+})
 
 const router = require('./router');
 

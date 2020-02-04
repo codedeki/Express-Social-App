@@ -1,10 +1,21 @@
 const User = require("../models/User");
 
+exports.mustBeLoggedIn = function(req, res, next) {
+    if (req.session.user) {
+        next()
+    } else {
+        req.flash("errors", "You must be logged in to perform that action.");
+        req.session.save(function() {
+            res.redirect('/');
+        })
+    }
+}
+
 exports.login = function(req, res) {
     let user = new User(req.body); //pass in form data req.body
     user.login().then(function(result) {
         //make each user session data unique & persistent
-        req.session.user = {avatar: user.avatar, username: user.data.username}
+        req.session.user = {avatar: user.avatar, username: user.data.username, _id: user.data._id}
         req.session.save(function() {
             res.redirect('/') //call this callback function in the meantime while we wait for the database to sync which may take a while
         })
@@ -25,7 +36,7 @@ exports.logout = function(req, res) {
 exports.register = function(req, res) {
     let user = new User(req.body);
     user.register().then(() => {
-        req.session.user = {username: user.data.username, avatar: user.avatar}
+        req.session.user = {username: user.data.username, avatar: user.avatar, _id: user.data._id}
         req.session.save(function() {
             res.redirect('/')
         })
@@ -41,7 +52,7 @@ exports.register = function(req, res) {
 
 exports.home = function(req, res) {
     if (req.session.user) {
-        res.render('home-dashboard', {username: req.session.user.username, avatar: req.session.user.avatar});
+        res.render('home-dashboard');
     } else {
         res.render('home-guest', {errors: req.flash('errors'), regErrors: req.flash('regErrors')}); //show flash message if error
     }
