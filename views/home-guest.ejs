@@ -3,9 +3,7 @@
 <div class="container py-md-5">
 
 <!-- add EJS syntax to print flash message if login fails -->
-  <% errors.forEach(function(message) { %>
-    <div class="alert alert-danger text-center"><%= message %></div>
-  <% }) %> 
+<%- include('includes/flash') %> 
 
   
   <div class="row align-items-center">

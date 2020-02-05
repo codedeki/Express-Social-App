@@ -15,8 +15,16 @@ let sessionOptions = session({
 app.use(sessionOptions);
 app.use(flash());
 
-//give ejs templates access to user property to avoid duplication of {username: req.session.user.username, avatar: req.session.user.avatar}
+//.locals gives ejs templates access to user property to avoid duplication of {username: req.session.user.username, avatar: req.session.user.avatar}
 app.use(function(req, res, next) {
+    //make all error and success messages available from all templates
+    res.locals.errors = req.flash("errors");
+    res.locals.success = req.flash("success");
+
+    //make current user id available on the req object
+    if (req.session.user) {req.visitorId = req.session.user._id} else {req.visitorId = 0}
+
+    //make user session data available from within view templates
     res.locals.user = req.session.user; 
     next();
 })
