@@ -1,6 +1,7 @@
 const postsCollection = require('../db').db().collection("posts");
 const ObjectID = require('mongodb').ObjectID;
 const User = require('./User');
+const sanitizeHTML = require('sanitize-html');
 
 let Post = function(data, userid, requestedPostId) {
     this.data = data;
@@ -15,9 +16,9 @@ Post.prototype.cleanUp = function() {
     
     //get rid of any bogus properties
     this.data = {
-        title: this.data.title.trim(),
-        body: this.data.body.trim(),
-        createdDate: new Date(),
+        title: sanitizeHTML(this.data.title.trim(), {allowedTags: [], allowedAttributes: {}}),
+        body: sanitizeHTML(this.data.body.trim(), {allowedTags: [], allowedAttributes: {}}),
+        createdDate: new Date(), 
         author: ObjectID(this.userid)
     }
 }
@@ -33,8 +34,8 @@ Post.prototype.create = function() {
         this.validate();
         if (!this.errors.length) {
             // save post into database
-            postsCollection.insertOne(this.data).then(() => {
-                resolve();
+            postsCollection.insertOne(this.data).then((info) => {
+                resolve(info.ops[0]._id); //get newly created id for post
             }).catch(() =>{
                 this.errors.push("Please try again later.");
                 reject(this.errors)
@@ -101,8 +102,7 @@ Post.reusablePostQuery = function(uniqueOperations, visitorId) {
                 avatar: new User(post.author, true).avatar
             }
             return post
-        })
-
+        })  
         resolve(posts)
     })
 }
@@ -134,5 +134,20 @@ Post.findByAuthorId = function(authorId) {
     ])
 }
 
-module.exports = Post;
+Post.delete = function(postIdToDelete, currentUserId) {
+    return new Promise(async function(resolve, reject) {
+        try {
+            let post = await Post.findSingleById(postIdToDelete, currentUserId)
+            if (post.isVisitorOwner) {
+                await postsCollection.deleteOne({_id: new ObjectID(postIdToDelete)})
+                resolve()
+            } else {
+                reject()
+            }
+        } catch {
+            reject()
+        }
+    })
+}
 
+module.exports = Post;

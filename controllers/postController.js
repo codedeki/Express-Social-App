@@ -5,12 +5,14 @@ exports.viewCreateScreen = function(req, res) {
 }
 
 exports.create = function(req, res) {
-    let post = new Post(req.body, req.session.user._id);
+    let post = new Post(req.body, req.session.user._id); //makes a unique post id
     post.create()
-    .then(function() {
-        res.send("New post created")
+    .then(function(newId) {
+        req.flash("success", "New post successfully created.")
+        req.session.save(() => res.redirect(`/post/${newId}`)) //newly created id for post
     }).catch(function(errors) {
-        res.send(errors)
+        errors.forEach(error => req.flash("errors", error))
+        req.session.save(() => res.redirect("/create-post"))
     });
 }
 
@@ -25,8 +27,14 @@ exports.viewSingle = async function(req, res) {
 
 exports.viewEditScreen = async function(req, res) {
    try {
-    let post = await Post.findSingleById(req.params.id)
-    res.render("edit-post", {post: post}) //don't want to render template until we actually have the data, so use async await 
+    let post = await Post.findSingleById(req.params.id, req.visitorId)
+    if (post.isVisitorOwner) { //only give user access to edit their own posts
+        res.render("edit-post", {post: post})
+        //don't want to render template until we actually have the data, so use async await 
+    } else {
+        req.flash("errors", "You do not have permission to perform that action."); //deny edit request if not logged in as user
+        req.session.save(() => res.redirect('/'))
+    }
    } catch {
        res.render("404")
    }
@@ -55,5 +63,15 @@ exports.edit = function(req, res) {
         req.session.save(function() {
             res.redirect("/")
         })
+    })
+}
+
+exports.delete = function(req, res) {
+    Post.delete(req.params.id, req.visitorId).then(() => {
+        req.flash("success", "Post successfully deleted.")
+        req.session.save(() => res.redirect(`/profile/${req.session.user.username}`))
+    }).catch(() => {
+        req.flash("errors", "You do not have permission to perform that action.")
+        req.session.save(() => res.redirect("/"))
     })
 }
