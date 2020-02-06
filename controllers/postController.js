@@ -59,7 +59,7 @@ exports.edit = function(req, res) {
         }
     }).catch(() => {
         //if post w/ requested id doesn't exist or if visitor is not owner
-        req.flash("errors", "You do not have persmission to perform that action.")
+        req.flash("errors", "You do not have permission to perform that action.")
         req.session.save(function() {
             res.redirect("/")
         })
@@ -73,5 +73,13 @@ exports.delete = function(req, res) {
     }).catch(() => {
         req.flash("errors", "You do not have permission to perform that action.")
         req.session.save(() => res.redirect("/"))
+    })
+}
+
+exports.search = function(req, res) {
+    Post.search(req.body.searchTerm).then(posts => {
+        res.json(posts)
+    }).catch(() => {
+        res.json([])  
     })
 }

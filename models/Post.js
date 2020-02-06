@@ -14,7 +14,7 @@ Post.prototype.cleanUp = function() {
     if (typeof(this.data.title) != "string") {this.data.title = ""}
     if (typeof(this.data.body) != "string") {this.data.body = ""}
     
-    //get rid of any bogus properties
+    // get rid of any bogus properties
     this.data = {
         title: sanitizeHTML(this.data.title.trim(), {allowedTags: [], allowedAttributes: {}}),
         body: sanitizeHTML(this.data.body.trim(), {allowedTags: [], allowedAttributes: {}}),
@@ -24,8 +24,8 @@ Post.prototype.cleanUp = function() {
 }
 
 Post.prototype.validate = function() {
-    if (this.data.title == "") {this.errors.push("You must provide a title")}
-    if (this.data.body == "") {this.errors.push("You must provide post content")}
+    if (this.data.title == "") {this.errors.push("You must provide a title.")}
+    if (this.data.body == "") {this.errors.push("You must provide post content.")}
 }
 
 Post.prototype.create = function() {
@@ -35,12 +35,11 @@ Post.prototype.create = function() {
         if (!this.errors.length) {
             // save post into database
             postsCollection.insertOne(this.data).then((info) => {
-                resolve(info.ops[0]._id); //get newly created id for post
+                resolve(info.ops[0]._id) //get newly created id for post
             }).catch(() =>{
                 this.errors.push("Please try again later.");
                 reject(this.errors)
             })
-        
         } else {
             reject(this.errors);
         }
@@ -97,6 +96,7 @@ Post.reusablePostQuery = function(uniqueOperations, visitorId) {
         posts = posts.map(function(post) {
             //modify author object in authorDocument: should have only two properties: username and avatar (for security, we don't want to include user password in the object, etc.)
             post.isVisitorOwner = post.authorId.equals(visitorId); //returns boolean for authentication to edit posts: true if matches visitorid 
+            post.authorId = undefined; // set to undefined to remove from public view the author id of post (for security reasons)
             post.author = {
                 username: post.author.username,
                 avatar: new User(post.author, true).avatar
@@ -135,7 +135,7 @@ Post.findByAuthorId = function(authorId) {
 }
 
 Post.delete = function(postIdToDelete, currentUserId) {
-    return new Promise(async function(resolve, reject) {
+    return new Promise(async (resolve, reject) => {
         try {
             let post = await Post.findSingleById(postIdToDelete, currentUserId)
             if (post.isVisitorOwner) {
@@ -148,6 +148,20 @@ Post.delete = function(postIdToDelete, currentUserId) {
             reject()
         }
     })
+}
+
+Post.search = function(searchTerm) {
+    return new Promise(async (resolve, reject) => {
+        if (typeof(searchTerm) == "string") {
+            let posts = await Post.reusablePostQuery([
+                {$match: {$text: {$search: searchTerm}}},
+                {$sort: {score: {$meta: "textScore"}}}
+            ])
+            resolve(posts)
+        } else {
+            reject()
+        }
+    }) 
 }
 
 module.exports = Post;
