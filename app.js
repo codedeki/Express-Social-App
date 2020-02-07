@@ -47,4 +47,25 @@ app.set('view engine', 'ejs'); //choose template engine: pug, handlebars, ejs, e
 
 app.use('/', router);
 
-module.exports = app;
+const server = require('http').createServer(app); //created server to use our express app to add socket functionality (http is native to node)
+const io = require('socket.io')(server);
+
+//integrate express with socket.io
+io.use(function(socket, next) {
+    sessionOptions(socket.request, socket.request.res, next)
+})
+
+io.on('connection', function(socket) {
+    //if logged in set up session
+    if (socket.request.session.user) {
+        let user = socket.request.session.user;
+        socket.emit('welcome', {username: user.username, avatar: user.avatar})
+
+        socket.on('chatMessageFromBrowser', function(data) {
+            socket.broadcast.emit('chatMessageFromServer', {message: sanitizeHTML(data.message, {allowedTags: [], allowedAttributes: {}}), username: user.username, avatar: user.avatar}) //io.emit emits event to all connected users (socket.emit would emit only to browser that sent the message, and socket.broadcast.emit sends to all connected browsers except the one who sent the message (for efficient data transfter)
+            //sanitize html to prevent execution of javascript in the chat
+        })
+    }
+})
+
+module.exports = server; //tells server to listen on port, rather than app as before

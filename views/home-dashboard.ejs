@@ -7,10 +7,10 @@
    <% if (posts.length) { %>
     <h2 class="text-center mb-4">The Latest From Those You Follow</h2>
     <div class="list-group">
-      <% posts.forEach((post) => { %>
+      <% posts.forEach(function (post) { %>
           <a href="/post/<%= post._id %>" class="list-group-item list-group-item-action">
               <img class="avatar-tiny" src="<%= post.author.avatar %>">
-              <strong><%= post.title %></strong> <span class="text-muted small">by <%= post.author.username %> on <%= post.createdDate.getMonth() + 1 %>/<%= post.createdDate.getDate() %>/<%= post.createdDate.getFullYear() %>
+              <strong><%= post.title %></strong> <span class="text-muted small">by <%= post.author.username %> on <%= post.createdDate.getMonth() + 1 %>/<%= post.createdDate.getDate() %>/<%= post.createdDate.getFullYear() %></span>
             </a>
      <% }) %>
   </div>

@@ -99,7 +99,9 @@ exports.ifUserExists = function(req, res, next) {
 exports.profilePostsScreen = function(req, res) {
     //view posts by author id
     Post.findByAuthorId(req.profileUser._id).then((posts) => {
+        console.log(req.profileUser)
         res.render('profile', {
+            title: `Profile for ${req.profileUser.username}`, //pass into template for header.ejs file
             currentPage: "posts",
             posts: posts, 
             profileUsername: req.profileUser.username,

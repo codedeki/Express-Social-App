@@ -174,13 +174,13 @@ Post.countPostsByAuthor = function(id) {
 
 Post.getFeed = async function(id) {
     //create an array of user ids that current user follows
-    let followedUsers = await followsCollection.find({authorId: new ObjectID(id) }).toArray()
+    let followedUsers = await followsCollection.find({authorId: new ObjectID(id)}).toArray()
     followedUsers = followedUsers.map(function(followDoc) {
         return followDoc.followedId //make sure to map the array to only show what we want it to show(followedId)
     })
     //look for posts where author is in above array of followed users
     return Post.reusablePostQuery([
-        {$match: {author: {$in: followedUsers}}}, //find any post doc where the author value is a value that i sin our array of followedUsers
+        {$match: {author: {$in: followedUsers}}}, //find any post doc where the author value is a value that is in our array of followedUsers
         {$sort: {createdDate: -1}} //descending order
     ]) //look up author's username and figure out avatar
 }

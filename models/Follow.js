@@ -78,7 +78,7 @@ Follow.getFollowersById = function(id) {
                 {$match: {followedId: id}},
                 {$lookup: {from: "users", localField: "authorId", foreignField: "_id", as: "userDoc"}},
                 {$project: {
-                    username: {$arrayElemAt: ["$userDoc.username", 0]}, //in first item in array grabbing username and email (to get gravitar photo) properties in databse
+                    username: {$arrayElemAt: ["$userDoc.username", 0]}, //in first item in array grabbing username and email (to get gravitar photo) properties in database
                     email: {$arrayElemAt: ["$userDoc.email", 0]}
                 }} 
             ]).toArray() //toArray is native to JavaScript; convert to array so we can map data
@@ -96,26 +96,25 @@ Follow.getFollowersById = function(id) {
 
 Follow.getFollowingById = function(id) {
     return new Promise(async (resolve, reject) => {
-        try {
-            let following = await followsCollection.aggregate([
-                {$match: {authorId: id}},
-                {$lookup: {from: "users", localField: "followedId", foreignField: "_id", as: "userDoc"}}, //show list of users the person is following
-                {$project: {
-                    username: {$arrayElemAt: ["$userDoc.username", 0]}, //in first item in array grabbing username and email (to get gravitar photo) properties in databse
-                    email: {$arrayElemAt: ["$userDoc.email", 0]}
-                }} 
-            ]).toArray() //aggregate and to array native to mongodb
-            following = following.map((followedUser) => {
-                //create a user
-                let user = new User(followedUser, true) //figures out a grativar based on user's email address
-                return {username: follower.username, avatar: user.avatar}
-            })
-            resolve(following)
-        } catch {
-            reject()
-        }
+      try {
+        let followers = await followsCollection.aggregate([
+          {$match: {authorId: id}},
+          {$lookup: {from: "users", localField: "followedId", foreignField: "_id", as: "userDoc"}},
+          {$project: {
+            username: {$arrayElemAt: ["$userDoc.username", 0]},
+            email: {$arrayElemAt: ["$userDoc.email", 0]}
+          }}
+        ]).toArray()
+        followers = followers.map((follower) => {
+          let user = new User(follower, true)
+          return {username: follower.username, avatar: user.avatar}
+        })
+        resolve(followers)
+      } catch {
+        reject()
+      }
     })
-}
+  }
 
 Follow.countFollowersById = function(id) {
     return new Promise(async (resolve, reject) => {
