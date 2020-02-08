@@ -3,6 +3,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const flash = require('connect-flash');
 const markdown = require('marked');
+const csrf = require('csurf');
 const app = express();
 const sanitizeHTML = require('sanitize-html');
 
@@ -45,7 +46,25 @@ app.use(express.static('public')); //use our public folder
 app.set('views', 'views'); //native to express, our folder
 app.set('view engine', 'ejs'); //choose template engine: pug, handlebars, ejs, etc.
 
+app.use(csrf()); //use csrf token for security 
+
+app.use(function(req, res, next) {
+    res.locals.csrfToken = req.csrfToken()
+    next()
+})
+
 app.use('/', router);
+
+app.use(function(err, req, res, next) {
+    if (err) {
+        if(err.code == "EBADCSRFTOKEN") {
+            req.flash('errors', "Cross site request forgery detected.")
+            req.session.save(() => res.redirect('/'))
+        } else {
+            res.render("404")
+        }
+    }
+})
 
 const server = require('http').createServer(app); //created server to use our express app to add socket functionality (http is native to node)
 const io = require('socket.io')(server);
@@ -62,7 +81,7 @@ io.on('connection', function(socket) {
         socket.emit('welcome', {username: user.username, avatar: user.avatar})
 
         socket.on('chatMessageFromBrowser', function(data) {
-            socket.broadcast.emit('chatMessageFromServer', {message: sanitizeHTML(data.message, {allowedTags: [], allowedAttributes: {}}), username: user.username, avatar: user.avatar}) //io.emit emits event to all connected users (socket.emit would emit only to browser that sent the message, and socket.broadcast.emit sends to all connected browsers except the one who sent the message (for efficient data transfter)
+            socket.broadcast.emit('chatMessageFromServer', {message: sanitizeHTML(data.message, {allowedTags: [], allowedAttributes: {}}), username: user.username, avatar: user.avatar}) //io.emit emits event to all connected users (socket.emit would emit only to browser that sent the message, and socket.broadcast.emit sends to all connected browsers except the one who sent the message (for efficient data transfer)
             //sanitize html to prevent execution of javascript in the chat
         })
     }
