@@ -8,6 +8,14 @@ exports.create = function(req, res) {
     let post = new Post(req.body, req.session.user._id); //makes a unique post id
     post.create()
     .then(function(newId) {
+        //send email example: add similar object to any other functions where we want to send an e-mail to client
+        sendgrid.send({
+            to: '',
+            from: 'test@test.com',
+            subject: 'Congrats on Creating a New Post!',
+            text: 'You did a great job of creating a post.',
+            html: 'You did a <strong>great</strong> job of creating a post'
+        })
         req.flash("success", "New post successfully created.")
         req.session.save(() => res.redirect(`/post/${newId}`)) //newly created id for post
     }).catch(function(errors) {

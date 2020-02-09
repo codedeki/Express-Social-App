@@ -2,6 +2,8 @@ const User = require("../models/User");
 const Post = require("../models/Post");
 const Follow = require("../models/Follow");
 const jwt = require('jsonwebtoken');
+const sendgrid = require('@sendgrid/mail');
+sendgrid.setApiKey(process.env.SENDGRIDAPIKEY);
 
 exports.doesUsernameExist = function(req, res) {
     User.findByUsername(req.body.username).then(() => {
@@ -107,6 +109,14 @@ exports.logout = function(req, res) {
 exports.register = function(req, res) {
     let user = new User(req.body);
     user.register().then(() => {
+        //send email example: add similar object to any other functions where we want to send an e-mail to client
+        sendgrid.send({
+            to: user.data.email,
+            from: 'ourapp@ourapp.com',
+            subject: 'Welcome to the Social App!',
+            text: 'Congrats on signing up!',
+            html: 'Make your first <strong>first</strong> post today!'
+        })
         req.session.user = {username: user.data.username, avatar: user.avatar, _id: user.data._id}
         req.session.save(function() {
             res.redirect('/')
