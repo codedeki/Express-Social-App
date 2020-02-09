@@ -7,6 +7,11 @@ const csrf = require('csurf');
 const app = express();
 const sanitizeHTML = require('sanitize-html');
 
+//stat api app.use routes
+app.use(express.urlencoded({extended: false}));
+app.use(express.json());
+app.use('/api', require('./router-api')); //set up new api url (/api...) app.use triad for api at top of file so the other app.use routes below are separated from the api route
+
 let sessionOptions = session({
     secret: "JavaScript is cool",
     store: new MongoStore({client: require('./db')}), //set up cookies in database
@@ -15,6 +20,7 @@ let sessionOptions = session({
     cookie: {maxAge: 1000 * 60 * 60 * 24, httpOnly: true} //set up browser cookies w/ unique identifier value to remember if user is logged in; expires after one day (1000 ms x 60 s x 1 hour x 24 hours)
 });
 
+//start general app.use routes
 app.use(sessionOptions);
 app.use(flash());
 
