@@ -6,11 +6,14 @@ Register users, authentication, create posts, follow users, async live search, l
 * Express
 * MongoDB 
 * EJS Templates
-* ESLint 
+* JSON Web Tokens
+* Cookies
+* Webpack
+* Axios
 * MVC (Model-View-Controller) Architecture
 * CRUD (Create, Read, Update, Delete) Architecture
-* Socket.io
-
+* Socket.io Messaging
+  * and more!
 
 ## To Login, use the link https://social-net-app.herokuapp.com/ and try the following (or make your own account):
 
