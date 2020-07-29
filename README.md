@@ -1,5 +1,5 @@
 # social-network-app
-Register users, authentication, create posts, follow users, async live search, live chatroom &amp; custom API: #MongoDB # Express #NodeJS +JavaScript + EJS
+Register users, authentication, create posts, follow users, async live search, live chatroom &amp; custom API
 
 ## Full Stack Web Development using modern techonologies including:
 * Node JS
