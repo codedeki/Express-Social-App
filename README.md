@@ -17,6 +17,8 @@ Register users, authentication, create posts, follow users, async live search, l
 
 ## To Login, use the link https://social-net-app.herokuapp.com/ and try the following (or make your own account):
 
+_...Please wait for the link to load...! Free hosting on Heroku may load the app slower than usual..._
+
 username: donkey  
 password: donkey123
 
